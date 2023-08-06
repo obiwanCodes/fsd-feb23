@@ -1,0 +1,13 @@
+GET http://localhost:5007/listings
+
+###
+
+POST http://localhost:5007/listings
+Content-Type: application/json
+
+{
+    "name": "Very good home stays",
+    "price": 1500,
+    "description": "very good home stay with delicious breakfast",
+    "currency": "INR"
+}

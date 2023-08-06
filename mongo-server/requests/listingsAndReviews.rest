@@ -1,0 +1,14 @@
+GET http://localhost:5007/listingsAndReviews?page=556
+
+###
+
+GET http://localhost:5007/listingsAndReviews/64cf75cf723e7f3cf9ef7213
+
+###
+
+POST http://localhost:5007/listingsAndReviews
+Content-Type: application/json
+
+{
+    "name": "new listing and review entry"
+}

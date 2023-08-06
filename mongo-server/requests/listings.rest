@@ -1,4 +1,8 @@
-GET http://localhost:5007/listings
+GET http://localhost:5007/listings?minPrice=2000&maxPrice=3000
+
+###
+
+GET http://localhost:5007/listings/64cf75cf723e7f3cf9ef7213
 
 ###
 
@@ -6,8 +10,8 @@ POST http://localhost:5007/listings
 Content-Type: application/json
 
 {
-    "name": "Very good home stays",
-    "price": 1500,
+    "name": "Saurab home stays",
+    "price": 1700,
     "description": "very good home stay with delicious breakfast",
     "currency": "INR"
 }

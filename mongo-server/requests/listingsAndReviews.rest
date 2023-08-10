@@ -1,4 +1,4 @@
-GET http://localhost:5007/listingsAndReviews?page=556
+GET http://localhost:5007/listingsAndReviews?page=1
 
 ###
 

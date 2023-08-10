@@ -30,20 +30,59 @@ const getListings = async (req, res) => {
   if (maxPrice) {
     return res.send(await Listing.find({ price: { $lte: maxPrice } }));
   }
-  return res.send(allListings);
+  return res.send(await Listing.find());
 };
 
 const getListingById = async (req, res) => {
-  console.log(req.params);
-  return res.send(await Listing.findById(req.params.id));
+  if (await Listing.findById(req.params.id))
+    return res.send(await Listing.findById(req.params.id));
+  return res.status(404).send("The requested lisiting could not be found");
 };
 
 const createListing = async (req, res) => {
   const newListing = await Listing.create(req.body);
-  return res.send({
+  return res.status(201).send({
     id: newListing._id,
     created: true,
   });
 };
 
-export { getListings, createListing, getListingById };
+const replaceListing = async (req, res) => {
+  try {
+    const replacedListing = await Listing.findOneAndReplace(
+      { _id: req.params.id },
+      req.body,
+      { returnDocument: "after" }
+    );
+    return res.send(replacedListing);
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+};
+
+const updateListing = async (req, res) => {
+  try {
+    const replacedListing = await Listing.findOneAndUpdate(
+      { _id: req.params.id },
+      req.body,
+      { returnDocument: "after" }
+    );
+    return res.send(replacedListing);
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+};
+
+const deleteListing = async (req, res) => {
+  await Listing.findOneAndDelete({ _id: req.params.id });
+  return res.status(204);
+};
+
+export {
+  getListings,
+  createListing,
+  getListingById,
+  replaceListing,
+  updateListing,
+  deleteListing,
+};

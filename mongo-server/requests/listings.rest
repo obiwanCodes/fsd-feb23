@@ -1,8 +1,8 @@
-GET http://localhost:5007/listings?minPrice=2000&maxPrice=3000
+GET http://localhost:5007/listings
 
 ###
 
-GET http://localhost:5007/listings/64cf75cf723e7f3cf9ef7213
+GET http://localhost:5007/listings/64cf74bfc2dc4eccd6256301
 
 ###
 
@@ -15,3 +15,26 @@ Content-Type: application/json
     "description": "very good home stay with delicious breakfast",
     "currency": "INR"
 }
+
+###
+
+PUT http://localhost:5007/listings/64cf74bfc2dc4eccd6256301
+Content-Type: application/json
+
+{
+    "name": "Chanda home stays",
+    "description": "brillant home stay with delicious breakfast",
+    "currency": "INR"
+}
+
+###
+
+PATCH http://localhost:5007/listings/64cf74bfc2dc4eccd6256301
+Content-Type: application/json
+
+{
+    "price": 2800
+}
+
+###
+DELETE http://localhost:5007/listings/64cf74bfc2dc4eccd6256301

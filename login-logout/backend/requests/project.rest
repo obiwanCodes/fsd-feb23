@@ -1,0 +1,48 @@
+GET http://localhost:5005/
+
+###
+
+GET http://localhost:5005/users
+
+###
+POST http://localhost:5005/signup
+Content-Type: application/json
+
+{
+    "name": "raghav",
+    "email": "raghav1@kh.com",
+    "password": "Raghav$1234"
+}
+
+###
+POST http://localhost:5005/login
+Content-Type: application/json
+
+{
+    "email": "deepika@kh.com",
+    "password": "Deepika$1234"
+}
+
+###
+GET http://localhost:5005/profiles
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGQ3NzQ3N2E2ZGVhOWM1MWFiYjAxNWEiLCJpYXQiOjE2OTE5MjcyMzAsImV4cCI6MTY5MTkyNzI1MH0.NKK5nE4rp_65BShbk76tbFP7SzKMNlRjyRVQcs9QCSw
+
+###
+POST http://localhost:5005/token
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGQ3NzQ3N2E2ZGVhOWM1MWFiYjAxNWEiLCJpYXQiOjE2OTE5MjczMjYsImV4cCI6MTY5MTkyNzQ0Nn0.xG8le_ntlJHfnwqw6L7_gEFGvDWXxznoQddbaWD8kFE"
+}
+
+###
+POST http://localhost:5005/logout
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGQ3NzQ3N2E2ZGVhOWM1MWFiYjAxNWEiLCJpYXQiOjE2OTE5MjczMjYsImV4cCI6MTY5MTkyNzQ0Nn0.xG8le_ntlJHfnwqw6L7_gEFGvDWXxznoQddbaWD8kFE"
+}
+
+# ###
+# POST http://localhost:5005/profiles

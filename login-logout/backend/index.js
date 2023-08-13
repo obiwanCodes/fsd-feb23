@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { userSignupSchema, userLoginSchema } from "./schemas/user.js";
 import jwt from "jsonwebtoken";
 import { createClient } from "redis";
+import authorize from "./middlewares/authorize.js";
 
 const app = express();
 const PORT = 5005;
@@ -37,6 +38,12 @@ app.post("/signup", async (req, res) => {
   if (error) return res.status(400).send(error.message);
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+    const reqUser = await users.findOne({ email });
+    if (reqUser) {
+      return res
+        .status(400)
+        .send("User with that email already exists. Please login!");
+    }
     const newUser = await users.insertOne({
       name,
       email,
@@ -78,10 +85,10 @@ app.post("/login", async (req, res) => {
       if (!refreshTokens) {
         await redisClient.set("refreshTokens", JSON.stringify([refreshToken]));
       } else {
-        await redisClient.set("refreshTokens", [
-          ...JSON.parse(refreshTokens),
-          refreshToken,
-        ]);
+        await redisClient.set(
+          "refreshTokens",
+          JSON.stringify([...JSON.parse(refreshTokens), refreshToken])
+        );
       }
       res.cookie("accessToken", {
         httpOnly: true,
@@ -129,52 +136,51 @@ app.post("/logout", async (req, res) => {
 
 const profiles = db.collection("profiles");
 
-app.post("/profiles", async (req, res) => {
-  await profiles.insertMany([
-    {
-      user_id: "64d75fcfc2318651f9adfb80",
-      name: "manjunath",
-      email: "manjunath@kh.com",
-      profileURL: "https://github.com/Manjunath-Hub10",
-    },
-    {
-      user_id: "64d76ddc281d4c8858b05bd8",
-      name: "aftab",
-      email: "aftab@kh.com",
-      profileURL: "https://github.com/aftabdotorg",
-    },
-    {
-      user_id: "64d773a605f404c27d06047c",
-      name: "saurabh",
-      email: "saurabh@kh.com",
-      profileURL: "https://github.com/saurabhon28",
-    },
-    {
-      user_id: "64d773f505f404c27d06047d",
-      name: "priti",
-      email: "priti@kh.com",
-      profileURL:
-        "https://keepup.com.au/wp-content/uploads/2022/12/16fslk6zdjar11mvqqunr8ddl6.jpg",
-    },
-    {
-      user_id: "64d77477a6dea9c51abb015a",
-      name: "deepika",
-      email: "deepika@kh.com",
-      profileURL: "https://github.com/DeepikaFSD",
-    },
-    {
-      user_id: "64d8b1f311058acaf1cbf664",
-      name: "raghav",
-      email: "raghav@kh.com",
-      profileURL: "https://github.com/Raghav-0311",
-    },
-  ]);
-  return res.sendStatus(201);
-});
-
-// app.get("/profile", authorize, async (req, res) => {
-//   const { userId } = req.query;
-//   return res.send(await profiles.findOne({ user_id: userId }));
+// app.post("/profiles", async (req, res) => {
+//   await profiles.insertMany([
+//     {
+//       user_id: "64d75fcfc2318651f9adfb80",
+//       name: "manjunath",
+//       email: "manjunath@kh.com",
+//       profileURL: "https://github.com/Manjunath-Hub10",
+//     },
+//     {
+//       user_id: "64d76ddc281d4c8858b05bd8",
+//       name: "aftab",
+//       email: "aftab@kh.com",
+//       profileURL: "https://github.com/aftabdotorg",
+//     },
+//     {
+//       user_id: "64d773a605f404c27d06047c",
+//       name: "saurabh",
+//       email: "saurabh@kh.com",
+//       profileURL: "https://github.com/saurabhon28",
+//     },
+//     {
+//       user_id: "64d773f505f404c27d06047d",
+//       name: "priti",
+//       email: "priti@kh.com",
+//       profileURL:
+//         "https://keepup.com.au/wp-content/uploads/2022/12/16fslk6zdjar11mvqqunr8ddl6.jpg",
+//     },
+//     {
+//       user_id: "64d77477a6dea9c51abb015a",
+//       name: "deepika",
+//       email: "deepika@kh.com",
+//       profileURL: "https://github.com/DeepikaFSD",
+//     },
+//     {
+//       user_id: "64d8b1f311058acaf1cbf664",
+//       name: "raghav",
+//       email: "raghav@kh.com",
+//       profileURL: "https://github.com/Raghav-0311",
+//     },
+//   ]);
+//   return res.sendStatus(201);
 // });
+
+app.get("/profiles", authorize, async (req, res) => {
+  return res.send(await profiles.findOne({ user_id: req.userId }));
+});
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

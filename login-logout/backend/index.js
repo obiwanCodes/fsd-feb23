@@ -1,8 +1,10 @@
 import express from "express";
 import connectDB, { client } from "./db/db.js";
+import connectDB2, { client as client2 } from "./db/db2.js";
 import bcrypt from "bcrypt";
 import { userSignupSchema, userLoginSchema } from "./schemas/user.js";
 import jwt from "jsonwebtoken";
+import { createClient } from "redis";
 
 const app = express();
 const PORT = 5005;
@@ -12,7 +14,18 @@ const dbName = "login-logout";
 const db = client.db(dbName);
 const users = db.collection("users");
 
+const analyticsDBName = "sample_analytics";
+const analyticsDB = client2.db(analyticsDBName);
+const customers = analyticsDB.collection("customers");
+
 connectDB().then(console.log).catch(console.error);
+connectDB2().then(console.log).catch(console.error);
+
+const redisClient = createClient();
+
+redisClient.on("error", (err) => console.log("Redis Client Error", err));
+
+await redisClient.connect();
 
 app.get("/", (req, res) => res.send("Ok"));
 
@@ -43,20 +56,125 @@ app.post("/login", async (req, res) => {
     const reqUser = await users.findOne({ email: email });
     if (reqUser) {
       const compareResult = await bcrypt.compare(password, reqUser.password);
-      if (!compareResult) return res.status(401).send("Incorrect password");
-      const token = jwt.sign({ _id: reqUser._id }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "15m",
-      });
+      if (!compareResult)
+        return res
+          .status(404)
+          .send(`Invalid credentials. Please check email/password`);
+      const accessToken = jwt.sign(
+        { _id: reqUser._id },
+        process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
+        {
+          expiresIn: "20s",
+        }
+      );
+      const refreshToken = jwt.sign(
+        { _id: reqUser._id },
+        process.env.JWT_REFRESH_TOKEN_SECRET_KEY,
+        {
+          expiresIn: "2m",
+        }
+      );
+      let refreshTokens = await redisClient.get("refreshTokens");
+      if (!refreshTokens) {
+        await redisClient.set("refreshTokens", JSON.stringify([refreshToken]));
+      } else {
+        await redisClient.set("refreshTokens", [
+          ...JSON.parse(refreshTokens),
+          refreshToken,
+        ]);
+      }
       res.cookie("accessToken", {
         httpOnly: true,
         secure: true,
       });
-      return res.send({ message: "login Successful", token });
+      return res.send({ email, accessToken, refreshToken });
     }
-    return res.status(404).send(`Cannot find user with the email: ${email}`);
+    return res
+      .status(404)
+      .send(`Invalid credentials. Please check email/password`);
   } catch (error) {
     return res.status(500).send(error);
   }
 });
+
+app.post("/token", async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.sendStatus(401);
+  let refreshTokens = JSON.parse(await redisClient.get("refreshTokens"));
+  if (!refreshTokens.includes(token)) return res.sendStatus(403);
+  try {
+    const decodedPayload = jwt.verify(
+      token,
+      process.env.JWT_REFRESH_TOKEN_SECRET_KEY
+    );
+    const accessToken = jwt.sign(
+      { _id: decodedPayload._id },
+      process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
+      {
+        expiresIn: "20s",
+      }
+    );
+    return res.send({ accessToken });
+  } catch (error) {
+    return res.sendStatus(403);
+  }
+});
+
+app.post("/logout", async (req, res) => {
+  let refreshTokens = JSON.parse(await redisClient.get("refreshTokens"));
+  refreshTokens = refreshTokens.filter((token) => token !== req.body.token);
+  await redisClient.set("refreshTokens", JSON.stringify(refreshTokens));
+  return res.send("Logged out successfully");
+});
+
+const profiles = db.collection("profiles");
+
+app.post("/profiles", async (req, res) => {
+  await profiles.insertMany([
+    {
+      user_id: "64d75fcfc2318651f9adfb80",
+      name: "manjunath",
+      email: "manjunath@kh.com",
+      profileURL: "https://github.com/Manjunath-Hub10",
+    },
+    {
+      user_id: "64d76ddc281d4c8858b05bd8",
+      name: "aftab",
+      email: "aftab@kh.com",
+      profileURL: "https://github.com/aftabdotorg",
+    },
+    {
+      user_id: "64d773a605f404c27d06047c",
+      name: "saurabh",
+      email: "saurabh@kh.com",
+      profileURL: "https://github.com/saurabhon28",
+    },
+    {
+      user_id: "64d773f505f404c27d06047d",
+      name: "priti",
+      email: "priti@kh.com",
+      profileURL:
+        "https://keepup.com.au/wp-content/uploads/2022/12/16fslk6zdjar11mvqqunr8ddl6.jpg",
+    },
+    {
+      user_id: "64d77477a6dea9c51abb015a",
+      name: "deepika",
+      email: "deepika@kh.com",
+      profileURL: "https://github.com/DeepikaFSD",
+    },
+    {
+      user_id: "64d8b1f311058acaf1cbf664",
+      name: "raghav",
+      email: "raghav@kh.com",
+      profileURL: "https://github.com/Raghav-0311",
+    },
+  ]);
+  return res.sendStatus(201);
+});
+
+// app.get("/profile", authorize, async (req, res) => {
+//   const { userId } = req.query;
+//   return res.send(await profiles.findOne({ user_id: userId }));
+// });
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

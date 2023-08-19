@@ -18,7 +18,13 @@ const limiter = rateLimit({
 dotenv.config();
 connectDB();
 
-const client = createClient();
+const client = createClient({
+  password: process.env.REDIS_CLOUD_PASSOWRD,
+  socket: {
+    host: process.env.REDIS_CLOUD_HOST,
+    port: 11197,
+  },
+});
 
 client.on("error", (err) => console.log("Redis Client Error", err));
 

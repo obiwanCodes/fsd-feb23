@@ -2,6 +2,10 @@ GET http://localhost:5007/listings
 
 ###
 
+GET http://localhost:5007/test
+
+###
+
 GET http://localhost:5007/listings/64cf74bfc2dc4eccd6256301
 
 ###

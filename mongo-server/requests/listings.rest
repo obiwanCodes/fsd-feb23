@@ -14,9 +14,9 @@ POST http://localhost:5007/listings
 Content-Type: application/json
 
 {
-    "name": "Saurab home stays",
-    "price": 1700,
-    "description": "very good home stay with delicious breakfast",
+    "name": "Raghav home stays",
+    "price": 4000,
+    "description": "preimum home stay with delicious breakfast",
     "currency": "INR"
 }
 

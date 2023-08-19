@@ -7,7 +7,7 @@ const authorize = (req, res, next) => {
       token,
       process.env.JWT_ACCESS_TOKEN_SECRET_KEY
     );
-    req.userId = decodedPayload._id;
+    req.user = decodedPayload;
     next();
   } catch (error) {
     return res.sendStatus(403);

@@ -1,6 +1,5 @@
 import express from "express";
-import connectDB, { client } from "./db/db.js";
-import connectDB2, { client as client2 } from "./db/db2.js";
+import connectDB, { client, client2 } from "./db/db.js";
 import bcrypt from "bcrypt";
 import { userSignupSchema, userLoginSchema } from "./schemas/user.js";
 import jwt from "jsonwebtoken";
@@ -11,6 +10,8 @@ const app = express();
 const PORT = 5005;
 app.use(express.json());
 
+connectDB().then(console.log).catch(console.error);
+
 const dbName = "login-logout";
 const db = client.db(dbName);
 const users = db.collection("users");
@@ -18,9 +19,6 @@ const users = db.collection("users");
 const analyticsDBName = "sample_analytics";
 const analyticsDB = client2.db(analyticsDBName);
 const customers = analyticsDB.collection("customers");
-
-connectDB().then(console.log).catch(console.error);
-connectDB2().then(console.log).catch(console.error);
 
 const redisClient = createClient();
 
@@ -30,7 +28,68 @@ await redisClient.connect();
 
 app.get("/", (req, res) => res.send("Ok"));
 
+app.post("/admin", async (req, res) => {
+  let token;
+  if (req.headers?.authorization)
+    token = req.headers?.authorization.split(" ")[1];
+  if (token === process.env.MASTER_TOKEN) {
+    if (req.body.userId) {
+      const reqUser = await users.findOne({ _id: req.body.userId });
+      const modifiedUser = await users.replaceOne(
+        { _id: reqUser._id },
+        { ...reqUser, role: "admin" }
+      );
+      return res.send(modifiedUser);
+    }
+    return res.sendStatus(400);
+  }
+  return res.sendStatus(403);
+});
+
+app.get("/customers", async (req, res) =>
+  res.send(
+    await customers
+      .aggregate([
+        {
+          $lookup: {
+            from: "accounts",
+            localField: "accounts",
+            foreignField: "account_id",
+            as: "accounts",
+          },
+        },
+      ])
+      .toArray()
+  )
+);
+
+app.get("/accounts", async (req, res) =>
+  res.send(
+    await analyticsDB
+      .collection("accounts")
+      .aggregate([
+        {
+          $lookup: {
+            from: "transactions",
+            localField: "account_id",
+            foreignField: "account_id",
+            as: "transactions",
+          },
+        },
+      ])
+      .toArray()
+  )
+);
+
 app.get("/users", async (req, res) => res.send(await users.find({}).toArray()));
+
+app.delete("/users/:userId", authorize, async (req, res) => {
+  if (req.user.role === "admin") {
+    await users.deleteOne({ _id: `ObjectId(${req.user.id})` });
+    return res.sendStatus(204);
+  }
+  return res.sendStatus(403);
+});
 
 app.post("/signup", async (req, res) => {
   const { error, value } = userSignupSchema.validate(req.body);
@@ -48,6 +107,7 @@ app.post("/signup", async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: "viewer",
     });
     return res.status(201).send(newUser);
   } catch (error) {
@@ -68,14 +128,17 @@ app.post("/login", async (req, res) => {
           .status(404)
           .send(`Invalid credentials. Please check email/password`);
       const accessToken = jwt.sign(
-        { _id: reqUser._id },
+        {
+          id: reqUser._id,
+          role: reqUser.role,
+        },
         process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
         {
           expiresIn: "20s",
         }
       );
       const refreshToken = jwt.sign(
-        { _id: reqUser._id },
+        { id: reqUser._id },
         process.env.JWT_REFRESH_TOKEN_SECRET_KEY,
         {
           expiresIn: "2m",
@@ -114,8 +177,12 @@ app.post("/token", async (req, res) => {
       token,
       process.env.JWT_REFRESH_TOKEN_SECRET_KEY
     );
+    const reqUser = await users.findOne({ _id: decodedPayload.id });
     const accessToken = jwt.sign(
-      { _id: decodedPayload._id },
+      {
+        id: decodedPayload.id,
+        role: reqUser.role,
+      },
       process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
       {
         expiresIn: "20s",

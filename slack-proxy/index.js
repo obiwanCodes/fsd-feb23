@@ -10,6 +10,8 @@ app.use(express.json());
 
 app.options("/channels", cors());
 
+app.get("/", (req, res) => res.send("Ok"));
+
 app.get("/channels", async (req, res) => {
   const response = await axios.get("https://slack.com/api/conversations.list", {
     headers: {

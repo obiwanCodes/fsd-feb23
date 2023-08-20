@@ -1,25 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import axios from "axios";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [users, setUsers] = useState([]);
 
-  return (
-    <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 5)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  );
+  useEffect(() => {
+    const getUsers = async () => {
+      const response = await axios.get("http://localhost:5005/users");
+      const response2 = await fetch("http://localhost:5005/users");
+      const data = response2.json();
+      console.log(response.data);
+      console.log(data);
+      setUsers(response.data);
+    };
+    getUsers();
+  }, []);
+
+  return <>{JSON.stringify(users, null, 2)}</>;
 }
 
 export default App;

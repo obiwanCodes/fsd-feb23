@@ -5,13 +5,22 @@ GET http://localhost:5005/
 GET http://localhost:5005/users
 
 ###
+DELETE http://localhost:5005/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFmdGFiYWtoYW5kQGtoLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY5MjUyMzY2OCwiZXhwIjoxNjkyNTIzNzI4fQ.RUL25pRw9U55muhxKGrTuJg90ijHyUOnVVMygYOl6Ko
+Content-Type: application/json
+
+{
+    "email": "manjunath@kh.com"
+}
+
+###
 POST http://localhost:5005/signup
 Content-Type: application/json
 
 {
-    "name": "raghav",
-    "email": "raghav1@kh.com",
-    "password": "Raghav$1234"
+    "name": "aftab akhand",
+    "email": "aftabakhand@kh.com",
+    "password": "Aftab$1234"
 }
 
 ###
@@ -19,8 +28,8 @@ POST http://localhost:5005/login
 Content-Type: application/json
 
 {
-    "email": "deepika@kh.com",
-    "password": "Deepika$1234"
+    "email": "aftabakhand@kh.com",
+    "password": "Aftab$1234"
 }
 
 ###
@@ -33,7 +42,7 @@ POST http://localhost:5005/token
 Content-Type: application/json
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGQ3NzQ3N2E2ZGVhOWM1MWFiYjAxNWEiLCJpYXQiOjE2OTE5MjczMjYsImV4cCI6MTY5MTkyNzQ0Nn0.xG8le_ntlJHfnwqw6L7_gEFGvDWXxznoQddbaWD8kFE"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFmdGFiYWtoYW5kQGtoLmNvbSIsImlhdCI6MTY5MjUyMzUwMCwiZXhwIjoxNjkyNTI0MTAwfQ.ERp7vgmH_xeqA9LBn83NaP2sW868Ifj4lhCRCjNTdkc"
 }
 
 ###
@@ -46,3 +55,18 @@ Content-Type: application/json
 
 # ###
 # POST http://localhost:5005/profiles
+
+###
+GET http://localhost:5005/customers
+
+###
+GET http://localhost:5005/accounts
+
+###
+POST http://localhost:5005/admin
+Content-Type: application/json
+Authorization: Bearer MASTER_TOKEN_FOR_MY_APP
+
+{
+    "email": "aftabakhand@kh.com"
+}

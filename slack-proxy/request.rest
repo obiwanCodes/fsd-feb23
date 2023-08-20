@@ -1,0 +1,10 @@
+GET http://localhost:5020/channels
+
+
+POST http://localhost:5020/message
+Content-Type: application/json
+
+{
+    "message": "Hello world",
+    "channel": "C03CREZMARY"
+}

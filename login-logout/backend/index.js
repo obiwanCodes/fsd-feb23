@@ -5,10 +5,12 @@ import { userSignupSchema, userLoginSchema } from "./schemas/user.js";
 import jwt from "jsonwebtoken";
 import { createClient } from "redis";
 import authorize from "./middlewares/authorize.js";
+import cors from "cors";
 
 const app = express();
 const PORT = 5005;
 app.use(express.json());
+app.use(cors());
 
 connectDB().then(console.log).catch(console.error);
 
@@ -33,11 +35,10 @@ app.post("/admin", async (req, res) => {
   if (req.headers?.authorization)
     token = req.headers?.authorization.split(" ")[1];
   if (token === process.env.MASTER_TOKEN) {
-    if (req.body.userId) {
-      const reqUser = await users.findOne({ _id: req.body.userId });
-      const modifiedUser = await users.replaceOne(
-        { _id: reqUser._id },
-        { ...reqUser, role: "admin" }
+    if (req.body.email) {
+      const modifiedUser = await users.updateOne(
+        { email: req.body.email },
+        { $set: { role: "admin" } }
       );
       return res.send(modifiedUser);
     }
@@ -83,12 +84,15 @@ app.get("/accounts", async (req, res) =>
 
 app.get("/users", async (req, res) => res.send(await users.find({}).toArray()));
 
-app.delete("/users/:userId", authorize, async (req, res) => {
-  if (req.user.role === "admin") {
-    await users.deleteOne({ _id: `ObjectId(${req.user.id})` });
-    return res.sendStatus(204);
+app.delete("/users", authorize, async (req, res) => {
+  if (req.body?.email) {
+    if (req.user.role === "admin") {
+      await users.deleteOne({ email: req.body.email });
+      return res.sendStatus(204);
+    }
+    return res.sendStatus(403);
   }
-  return res.sendStatus(403);
+  return res.sendStatus(400);
 });
 
 app.post("/signup", async (req, res) => {
@@ -129,19 +133,19 @@ app.post("/login", async (req, res) => {
           .send(`Invalid credentials. Please check email/password`);
       const accessToken = jwt.sign(
         {
-          id: reqUser._id,
+          email: reqUser.email,
           role: reqUser.role,
         },
         process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
         {
-          expiresIn: "20s",
+          expiresIn: "1m",
         }
       );
       const refreshToken = jwt.sign(
-        { id: reqUser._id },
+        { email: reqUser.email },
         process.env.JWT_REFRESH_TOKEN_SECRET_KEY,
         {
-          expiresIn: "2m",
+          expiresIn: "10m",
         }
       );
       let refreshTokens = await redisClient.get("refreshTokens");
@@ -177,15 +181,17 @@ app.post("/token", async (req, res) => {
       token,
       process.env.JWT_REFRESH_TOKEN_SECRET_KEY
     );
-    const reqUser = await users.findOne({ _id: decodedPayload.id });
+    const reqUser = await users.findOne({
+      email: decodedPayload.email,
+    });
     const accessToken = jwt.sign(
       {
-        id: decodedPayload.id,
+        email: reqUser.email,
         role: reqUser.role,
       },
       process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
       {
-        expiresIn: "20s",
+        expiresIn: "1m",
       }
     );
     return res.send({ accessToken });

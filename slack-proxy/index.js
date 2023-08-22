@@ -6,9 +6,9 @@ dotenv.config();
 
 const app = express();
 const PORT = 5020;
-app.use(express.json());
 
-app.options("/channels", cors());
+app.use(cors());
+app.use(express.json());
 
 app.get("/", (req, res) => res.send("Ok"));
 
@@ -25,8 +25,6 @@ app.get("/channels", async (req, res) => {
     })
   );
 });
-
-app.use(cors());
 
 app.post("/message", async (req, res) => {
   const { message, channel } = req.body;

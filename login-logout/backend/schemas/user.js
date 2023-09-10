@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { tlds } from "@hapi/tlds";
 const passwordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
 
 const userSignupSchema = Joi.object({
   name: Joi.string().min(3).max(30).required(),

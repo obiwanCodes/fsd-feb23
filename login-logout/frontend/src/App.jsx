@@ -1,23 +1,17 @@
-import { useEffect, useState } from "react";
 import "./App.css";
-import axios from "axios";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Signup from "./components/Signup/Signup"
+import Home from "./components/Home/Home";
+import Login from "./components/Login/Login";
+
 
 function App() {
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    const getUsers = async () => {
-      const response = await axios.get("http://localhost:5005/users");
-      const response2 = await fetch("http://localhost:5005/users");
-      const data = response2.json();
-      console.log(response.data);
-      console.log(data);
-      setUsers(response.data);
-    };
-    getUsers();
-  }, []);
-
-  return <>{JSON.stringify(users, null, 2)}</>;
+  return <BrowserRouter>
+    <Routes>
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Home />} />
+    </Routes>
+  </BrowserRouter>
 }
-
 export default App;

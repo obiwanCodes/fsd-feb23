@@ -1,6 +1,7 @@
 import express from "express";
-import connectDB, { client, client2 } from "./db/db.js";
+import connectDB, { client2 } from "./db/db.js";
 import bcrypt from "bcrypt";
+import cookieParser from "cookie-parser";
 import { userSignupSchema, userLoginSchema } from "./schemas/user.js";
 import jwt from "jsonwebtoken";
 import { createClient } from "redis";
@@ -10,17 +11,18 @@ import cors from "cors";
 const app = express();
 const PORT = 5005;
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors());
 
 connectDB().then(console.log).catch(console.error);
 
 const dbName = "login-logout";
-const db = client.db(dbName);
+const db = client2.db(dbName);
 const users = db.collection("users");
 
-const analyticsDBName = "sample_analytics";
-const analyticsDB = client2.db(analyticsDBName);
-const customers = analyticsDB.collection("customers");
+// const analyticsDBName = "sample_analytics";
+// const analyticsDB = client2.db(analyticsDBName);
+// const customers = analyticsDB.collection("customers");
 
 const redisClient = createClient();
 
@@ -47,42 +49,44 @@ app.post("/admin", async (req, res) => {
   return res.sendStatus(403);
 });
 
-app.get("/customers", async (req, res) =>
-  res.send(
-    await customers
-      .aggregate([
-        {
-          $lookup: {
-            from: "accounts",
-            localField: "accounts",
-            foreignField: "account_id",
-            as: "accounts",
-          },
-        },
-      ])
-      .toArray()
-  )
-);
+// app.get("/customers", async (req, res) =>
+//   res.send(
+//     await customers
+//       .aggregate([
+//         {
+//           $lookup: {
+//             from: "accounts",
+//             localField: "accounts",
+//             foreignField: "account_id",
+//             as: "accounts",
+//           },
+//         },
+//       ])
+//       .toArray()
+//   )
+// );
 
-app.get("/accounts", async (req, res) =>
-  res.send(
-    await analyticsDB
-      .collection("accounts")
-      .aggregate([
-        {
-          $lookup: {
-            from: "transactions",
-            localField: "account_id",
-            foreignField: "account_id",
-            as: "transactions",
-          },
-        },
-      ])
-      .toArray()
-  )
-);
+// app.get("/accounts", async (req, res) =>
+//   res.send(
+//     await analyticsDB
+//       .collection("accounts")
+//       .aggregate([
+//         {
+//           $lookup: {
+//             from: "transactions",
+//             localField: "account_id",
+//             foreignField: "account_id",
+//             as: "transactions",
+//           },
+//         },
+//       ])
+//       .toArray()
+//   )
+// );
 
-app.get("/users", async (req, res) => res.send(await users.find({}).toArray()));
+app.get("/users", authorize, async (req, res) =>
+  res.send(await users.find({}).toArray())
+);
 
 app.delete("/users", authorize, async (req, res) => {
   if (req.body?.email) {
@@ -206,6 +210,12 @@ app.post("/logout", async (req, res) => {
   await redisClient.set("refreshTokens", JSON.stringify(refreshTokens));
   return res.send("Logged out successfully");
 });
+
+// app.get("/products", authorize, async(req, res) => {
+//   res.send([{
+//     name:
+//   }])
+// })
 
 const profiles = db.collection("profiles");
 

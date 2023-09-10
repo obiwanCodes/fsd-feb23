@@ -1,0 +1,25 @@
+.label {
+  font-size: larger;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  min-width: 350px;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+form {
+  border: 2px solid black;
+  padding: 1rem;
+  background-color: antiquewhite;
+}
+
+h1 {
+  margin-top: 0px;
+}
+
+.error {
+  color: red;
+}

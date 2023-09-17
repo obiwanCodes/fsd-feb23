@@ -12,10 +12,10 @@ const app = express();
 const PORT = 5005;
 
 const corsOptions = {
-  origin: 'http://localhost:5174',
+  origin: "http://localhost:5174",
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
-  credentials: true
-}
+  credentials: true,
+};
 
 app.use(express.json());
 app.use(cookieParser());
@@ -31,7 +31,13 @@ const users = db.collection("users");
 // const analyticsDB = client2.db(analyticsDBName);
 // const customers = analyticsDB.collection("customers");
 
-const redisClient = createClient();
+const redisClient = createClient({
+  password: process.env.REDIS_PASSWORD,
+  socket: {
+    host: "redis-11197.c55.eu-central-1-1.ec2.cloud.redislabs.com",
+    port: 11197,
+  },
+});
 
 redisClient.on("error", (err) => console.log("Redis Client Error", err));
 

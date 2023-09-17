@@ -10,9 +10,16 @@ import cors from "cors";
 
 const app = express();
 const PORT = 5005;
+
+const corsOptions = {
+  origin: 'http://localhost:5174',
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
+  credentials: true
+}
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(corsOptions));
 
 connectDB().then(console.log).catch(console.error);
 
@@ -142,14 +149,14 @@ app.post("/login", async (req, res) => {
         },
         process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
         {
-          expiresIn: "1m",
+          expiresIn: "15m",
         }
       );
       const refreshToken = jwt.sign(
         { email: reqUser.email },
         process.env.JWT_REFRESH_TOKEN_SECRET_KEY,
         {
-          expiresIn: "10m",
+          expiresIn: "60m",
         }
       );
       let refreshTokens = await redisClient.get("refreshTokens");
@@ -175,8 +182,8 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/token", async (req, res) => {
-  const { token } = req.body;
+app.get("/token", async (req, res) => {
+  const token = req.cookies["xpress-r-token"];
   if (!token) return res.sendStatus(401);
   let refreshTokens = JSON.parse(await redisClient.get("refreshTokens"));
   if (!refreshTokens.includes(token)) return res.sendStatus(403);
@@ -195,7 +202,7 @@ app.post("/token", async (req, res) => {
       },
       process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
       {
-        expiresIn: "1m",
+        expiresIn: "15m",
       }
     );
     return res.send({ accessToken });

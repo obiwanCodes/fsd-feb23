@@ -1,16 +1,44 @@
 import React, { useEffect } from 'react'
-const API_URL = import.meta.env.VITE_API_URL;
+import axios from 'axios';
+import UserCard from '../UserCard/UserCard';
+import { API_URL } from '../../App';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
+    const [users, setUsers] = useState([])
+    const navigate = useNavigate();
+
+    const getToken = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/token`, { withCredentials: true });
+            document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true`
+        } catch (error) {
+            navigate('/login')
+        }
+    }
+
     useEffect(() => {
         const getUsers = async () => {
-            const response = await axios.get(`${API_URL}/users`)
-            console.log(response)
+            try {
+                const response = await axios.get(`${API_URL}/users`, { withCredentials: true })
+                setUsers(response?.data)
+            } catch (error) {
+                if (error?.response?.status === 403) {
+                    await getToken()
+                    getUsers()
+                } 
+            }
         }
         getUsers()
     }, [])
+
     return (
-        <div>Home</div>
+        <>
+            <div className='users-container'>
+                {users.map(user => <UserCard name={user.name} email={user.email} key={user.id}/>)}
+            </div>
+        </>
     )
 }
 

@@ -1,6 +1,16 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  width: 100%;
+}
+
+.users-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.user-card {
+  flex-grow: 1;
 }

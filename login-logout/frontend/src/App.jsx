@@ -4,6 +4,7 @@ import Signup from "./components/Signup/Signup"
 import Home from "./components/Home/Home";
 import Login from "./components/Login/Login";
 
+export const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   return <BrowserRouter>

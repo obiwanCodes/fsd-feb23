@@ -189,7 +189,8 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/token", async (req, res) => {
-  const token = req.cookies["xpress-r-token"];
+  //const token = req.cookies["xpress-r-token"];
+  const token = req.headers.authorization.split(" ")[1];
   if (!token) return res.sendStatus(401);
   let refreshTokens = JSON.parse(await redisClient.get("refreshTokens"));
   if (!refreshTokens.includes(token)) return res.sendStatus(403);

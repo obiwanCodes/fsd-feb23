@@ -23,8 +23,10 @@ const Login = () => {
                     "Content-Type": "application/json"
                 }
             })
-            document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true; SameSite=None; Secure;`
-            document.cookie = `xpress-r-token=${response.data.refreshToken}; expires: ${new Date(Date.now() + 3600000)}; httpOnly: true; SameSite=None; Secure;`
+            // document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true; SameSite=None; Secure;`
+            // document.cookie = `xpress-r-token=${response.data.refreshToken}; expires: ${new Date(Date.now() + 3600000)}; httpOnly: true; SameSite=None; Secure;`
+            sessionStorage.setItem('access-token', response.data.accessToken);
+            sessionStorage.setItem('refresh-token', response.data.refreshToken);
             navigate('/')
         } catch (error) {
             console.log("error in login")

@@ -12,8 +12,14 @@ function Home() {
 
     const getToken = async () => {
         try {
-            const response = await axios.get(`${API_URL}/token`, { withCredentials: true });
-            document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true; SameSite=None; Secure;`;
+            //const response = await axios.get(`${API_URL}/token`, { withCredentials: true });
+            //document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true; SameSite=None; Secure;`;
+            const response = await axios.get(`${API_URL}/token`, {
+                headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('refresh-token')}`
+                }
+            });
+            sessionStorage.setItem('access-token', response.data.accessToken);
             setToken(response.data.accessToken);
         } catch (error) {
             navigate('/login');
@@ -23,7 +29,11 @@ function Home() {
     useEffect(() => {
         const getUsers = async () => {
             try {
-                const response = await axios.get(`${API_URL}/users`, { withCredentials: true })
+                const response = await axios.get(`${API_URL}/users`, {
+                    headers: {
+                        Authorization: `Bearer ${sessionStorage.getItem('access-token')}`
+                    }
+                })
                 setUsers(response?.data)
             } catch (error) {
                 if (error?.response?.status === 403) {

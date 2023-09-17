@@ -4,10 +4,11 @@ import UserCard from '../UserCard/UserCard';
 import { API_URL } from '../../App';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Button from '@mui/material/Button';
 
 function Home() {
     const [users, setUsers] = useState([])
-    const [token, setToken] = useState('')
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
     const navigate = useNavigate();
 
     const getToken = async () => {
@@ -20,7 +21,7 @@ function Home() {
                 }
             });
             sessionStorage.setItem('access-token', response.data.accessToken);
-            setToken(response.data.accessToken);
+            setIsLoggedIn(true);
         } catch (error) {
             navigate('/login');
         }
@@ -35,6 +36,7 @@ function Home() {
                     }
                 })
                 setUsers(response?.data)
+                setIsLoggedIn(true)
             } catch (error) {
                 if (error?.response?.status === 403) {
                     await getToken()
@@ -42,10 +44,17 @@ function Home() {
             }
         }
         getUsers()
-    }, [token])
+    }, [isLoggedIn])
+
+    const logout = () => {
+        sessionStorage.removeItem('access-token')
+        sessionStorage.removeItem('refresh-token')
+        setIsLoggedIn(false)
+    }
 
     return (
         <>
+            {isLoggedIn && <Button variant="contained" onClick={logout}>Log out</Button>}
             <div className='users-container'>
                 {users.map(user => <UserCard name={user.name} email={user.email} key={user.id} />)}
             </div>

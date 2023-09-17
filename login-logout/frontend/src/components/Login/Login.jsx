@@ -4,6 +4,7 @@ import axios from "axios";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useNavigate, Link } from "react-router-dom";
+import { API_URL } from '../../App';
 
 const Login = () => {
     const loginRef = useRef(null);
@@ -17,7 +18,7 @@ const Login = () => {
             password: password.value
         }
         try {
-            const response = await axios.post('http://localhost:5005/login', userObj, {
+            const response = await axios.post(`${API_URL}/login`, userObj, {
                 headers: {
                     "Content-Type": "application/json"
                 }

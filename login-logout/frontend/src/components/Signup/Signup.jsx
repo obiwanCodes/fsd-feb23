@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import { emailRegex, passwordRegex } from "../../config.js"
 import { useNavigate, Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../../App';
 
 const Signup = () => {
     const signupRef = useRef(null);
@@ -36,7 +36,7 @@ const Signup = () => {
             return;
         }
         try {
-            axios.post(`${API_URL}signup`, userObj, {
+            axios.post(`${API_URL}/signup`, userObj, {
                 headers: {
                     "Content-Type": "application/json"
                 }

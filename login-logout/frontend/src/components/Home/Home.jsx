@@ -7,14 +7,16 @@ import { useNavigate } from 'react-router-dom';
 
 function Home() {
     const [users, setUsers] = useState([])
+    const [token, setToken] = useState('')
     const navigate = useNavigate();
 
     const getToken = async () => {
         try {
             const response = await axios.get(`${API_URL}/token`, { withCredentials: true });
-            document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true`
+            document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true`;
+            setToken(response.data.accessToken);
         } catch (error) {
-            navigate('/login')
+            navigate('/login');
         }
     }
 
@@ -26,17 +28,16 @@ function Home() {
             } catch (error) {
                 if (error?.response?.status === 403) {
                     await getToken()
-                    getUsers()
-                } 
+                }
             }
         }
         getUsers()
-    }, [])
+    }, [token])
 
     return (
         <>
             <div className='users-container'>
-                {users.map(user => <UserCard name={user.name} email={user.email} key={user.id}/>)}
+                {users.map(user => <UserCard name={user.name} email={user.email} key={user.id} />)}
             </div>
         </>
     )

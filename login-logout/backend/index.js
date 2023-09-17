@@ -12,7 +12,7 @@ const app = express();
 const PORT = 5005;
 
 const corsOptions = {
-  origin: "https://login-logount-frontend.vercel.app",
+  origin: "https://login-logout-frontend.vercel.app",
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
   credentials: true,
 };

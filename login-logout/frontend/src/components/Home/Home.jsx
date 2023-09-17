@@ -13,7 +13,7 @@ function Home() {
     const getToken = async () => {
         try {
             const response = await axios.get(`${API_URL}/token`, { withCredentials: true });
-            document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true`;
+            document.cookie = `xpress-a-token=${response.data.accessToken}; expires: ${new Date(Date.now() + 900000)}; httpOnly: true; SameSite=None; Secure;`;
             setToken(response.data.accessToken);
         } catch (error) {
             navigate('/login');
